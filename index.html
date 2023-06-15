@@ -307,7 +307,7 @@
     const apiTool = cornerstoneTools[`${toolName}Tool`];
 
     if (apiTool) {
-      cornerstoneTools.addTool(apiTool);
+      cornerstoneTools.addTool(apiTool, {showMeasurement: false});
     } else {
       console.warn(`unable to add tool with name ${toolName}Tool`);
       console.log(cornerstoneTools);
