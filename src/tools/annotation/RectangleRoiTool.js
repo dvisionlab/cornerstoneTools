@@ -69,8 +69,10 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
 
       return;
     }
+    console.log('showMeasurement', this.options.showMeasurement);
 
     return {
+      showMeasurements: this.options.showMeasurement,
       visible: true,
       active: true,
       color: undefined,
@@ -162,6 +164,7 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
 
   renderToolData(evt) {
     const toolData = getToolState(evt.currentTarget, this.name);
+    console.log('toolData', toolData);
 
     if (!toolData) {
       return;
@@ -230,7 +233,7 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
           drawHandles(context, eventData, data.handles, handleOptions);
         }
 
-        if (this.showMeasurements) {
+        if (data.showMeasurements) {
           // Update textbox stats
           if (data.invalidated === true) {
             if (data.cachedStats) {
