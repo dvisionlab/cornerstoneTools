@@ -48,7 +48,6 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
         renderDashed: false,
         // showMinMax: false,
         // showHounsfieldUnits: true,
-        showMeasurements: true,
       },
       svgCursor: rectangleRoiCursor,
     };
@@ -69,10 +68,9 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
 
       return;
     }
-    console.log('showMeasurement', this.options.showMeasurement);
 
     return {
-      showMeasurements: this.options.showMeasurement,
+      computeMeasurements: this.options.computeMeasurements,
       visible: true,
       active: true,
       color: undefined,
@@ -144,21 +142,29 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
   }
 
   updateCachedStats(image, element, data) {
-    const seriesModule =
-      external.cornerstone.metaData.get('generalSeriesModule', image.imageId) ||
-      {};
-    const modality = seriesModule.modality;
-    const pixelSpacing = getPixelSpacing(image);
+    console.log('updateCachedStats', data);
+    console.trace();
 
-    const stats = _calculateStats(
-      image,
-      element,
-      data.handles,
-      modality,
-      pixelSpacing
-    );
+    if (data.computeMeasurements) {
+      const seriesModule =
+        external.cornerstone.metaData.get(
+          'generalSeriesModule',
+          image.imageId
+        ) || {};
+      const modality = seriesModule.modality;
+      const pixelSpacing = getPixelSpacing(image);
 
-    data.cachedStats = stats;
+      const stats = _calculateStats(
+        image,
+        element,
+        data.handles,
+        modality,
+        pixelSpacing
+      );
+
+      data.cachedStats = stats;
+    }
+
     data.invalidated = false;
   }
 
@@ -233,7 +239,7 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
           drawHandles(context, eventData, data.handles, handleOptions);
         }
 
-        if (data.showMeasurements) {
+        if (data.computeMeasurements) {
           // Update textbox stats
           if (data.invalidated === true) {
             if (data.cachedStats) {

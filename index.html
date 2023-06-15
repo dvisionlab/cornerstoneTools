@@ -357,7 +357,7 @@
       const apiTool = cornerstoneTools[`${toolName}Tool`];
 
       if (apiTool) {
-        cornerstoneTools.addTool(apiTool, { showMeasurement: false });
+        cornerstoneTools.addTool(apiTool);
       } else {
         console.warn(`unable to add tool with name ${toolName}Tool`);
         console.log(cornerstoneTools);
@@ -392,7 +392,7 @@
         cornerstoneTools.setToolActive(toolName, {
           mouseButtonMask,
           isTouchActive: true,
-          showMeasurement: false,
+          computeMeasurements: false,
         });
 
         evt.preventDefault();
