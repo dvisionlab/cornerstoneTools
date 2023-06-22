@@ -142,9 +142,6 @@ export default class RectangleRoiTool extends BaseAnnotationTool {
   }
 
   updateCachedStats(image, element, data) {
-    console.log('updateCachedStats', data);
-    console.trace();
-
     if (data.computeMeasurements) {
       const seriesModule =
         external.cornerstone.metaData.get(

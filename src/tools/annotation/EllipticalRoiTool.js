@@ -74,6 +74,7 @@ export default class EllipticalRoiTool extends BaseAnnotationTool {
     }
 
     return {
+      computeMeasurements: this.options.computeMeasurements,
       visible: true,
       active: true,
       color: undefined,
@@ -166,21 +167,25 @@ export default class EllipticalRoiTool extends BaseAnnotationTool {
   }
 
   updateCachedStats(image, element, data) {
-    const seriesModule =
-      external.cornerstone.metaData.get('generalSeriesModule', image.imageId) ||
-      {};
-    const modality = seriesModule.modality;
-    const pixelSpacing = getPixelSpacing(image);
+    if (data.computeMeasurements) {
+      const seriesModule =
+        external.cornerstone.metaData.get(
+          'generalSeriesModule',
+          image.imageId
+        ) || {};
+      const modality = seriesModule.modality;
+      const pixelSpacing = getPixelSpacing(image);
 
-    const stats = _calculateStats(
-      image,
-      element,
-      data.handles,
-      modality,
-      pixelSpacing
-    );
+      const stats = _calculateStats(
+        image,
+        element,
+        data.handles,
+        modality,
+        pixelSpacing
+      );
 
-    data.cachedStats = stats;
+      data.cachedStats = stats;
+    }
     data.invalidated = false;
   }
 
@@ -249,52 +254,58 @@ export default class EllipticalRoiTool extends BaseAnnotationTool {
           'pixel',
           data.handles.initialRotation
         );
+
         drawHandles(context, eventData, data.handles, handleOptions);
 
-        // Update textbox stats
-        if (data.invalidated === true) {
-          if (data.cachedStats) {
-            this.throttledUpdateCachedStats(image, element, data);
-          } else {
-            this.updateCachedStats(image, element, data);
+        if (data.computeMeasurements) {
+          // Update textbox stats
+          if (data.invalidated === true) {
+            if (data.cachedStats) {
+              this.throttledUpdateCachedStats(image, element, data);
+            } else {
+              this.updateCachedStats(image, element, data);
+            }
           }
-        }
 
-        // Default to textbox on right side of ROI
-        if (!data.handles.textBox.hasMoved) {
-          const defaultCoords = getROITextBoxCoords(
-            eventData.viewport,
-            data.handles
+          // Default to textbox on right side of ROI
+          if (!data.handles.textBox.hasMoved) {
+            const defaultCoords = getROITextBoxCoords(
+              eventData.viewport,
+              data.handles
+            );
+
+            Object.assign(data.handles.textBox, defaultCoords);
+          }
+
+          const textBoxAnchorPoints = handles =>
+            _findTextBoxAnchorPoints(handles.start, handles.end);
+          const textBoxContent = _createTextBoxContent(
+            context,
+            image.color,
+            data.cachedStats,
+            modality,
+            hasPixelSpacing,
+            this.configuration
           );
 
-          Object.assign(data.handles.textBox, defaultCoords);
+          data.unit = _getUnit(
+            modality,
+            this.configuration.showHounsfieldUnits
+          );
+
+          drawLinkedTextBox(
+            context,
+            element,
+            data.handles.textBox,
+            textBoxContent,
+            data.handles,
+            textBoxAnchorPoints,
+            color,
+            lineWidth,
+            10,
+            true
+          );
         }
-
-        const textBoxAnchorPoints = handles =>
-          _findTextBoxAnchorPoints(handles.start, handles.end);
-        const textBoxContent = _createTextBoxContent(
-          context,
-          image.color,
-          data.cachedStats,
-          modality,
-          hasPixelSpacing,
-          this.configuration
-        );
-
-        data.unit = _getUnit(modality, this.configuration.showHounsfieldUnits);
-
-        drawLinkedTextBox(
-          context,
-          element,
-          data.handles.textBox,
-          textBoxContent,
-          data.handles,
-          textBoxAnchorPoints,
-          color,
-          lineWidth,
-          10,
-          true
-        );
       }
     });
   }

@@ -65,3 +65,5 @@ export default {
   state,
   getters,
 };
+
+window.state = state;
